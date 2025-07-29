@@ -1,11 +1,10 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
-  "start": "node server.js"
-},
+    "start": "node server.js"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -18,5 +17,15 @@
     "mongodb": "^6.16.0",
     "mongoose": "^8.15.0",
     "nodemailer": "^7.0.3"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gnaneswar32197/MovieReviewApp_Backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Gnaneswar32197/MovieReviewApp_Backend/issues"
+  },
+  "homepage": "https://github.com/Gnaneswar32197/MovieReviewApp_Backend#readme",
+  "description": ""
 }

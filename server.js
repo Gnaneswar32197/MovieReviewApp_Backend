@@ -1165,6 +1165,15 @@ app.get('/api/admin/all-favorites', async (req, res) => {
   }
 });
 
+app.get('/api/admin/all-movies', async (req, res) => {
+  try {
+    const movies = await Movie.find({});
+    res.json(movies);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching all movies' });
+  }
+});
+
 // ...existing code...
 
 // --- Start Server ---
