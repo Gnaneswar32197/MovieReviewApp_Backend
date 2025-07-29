@@ -663,6 +663,7 @@ const movieSchema = new mongoose.Schema({
   posterUrl: String,
   genres: [String],
   description: String,
+  trending: { type: Boolean, default: false },
   active: { type: Boolean, default: true },
   category: { type: String, enum: ['Hollywood', 'Bollywood', 'Tollywood', 'Kollywood', 'Anime', 'Webseries', 'Sandlewood'], required: true },
   episodes: { type: Number }, // Only for Anime/Webseries
@@ -1173,7 +1174,20 @@ app.get('/api/admin/all-movies', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error fetching all movies' });
   }
 });
-
+// --- Toggle Trending Status for a Movie (Admin) ---
+app.put('/api/admin/movies/:id/trending', async (req, res) => {
+  try {
+    const movie = await Movie.findById(req.params.id);
+    if (!movie) {
+      return res.status(404).json({ success: false, message: 'Movie not found' });
+    }
+    movie.trending = !movie.trending; // Toggle trending (add this field if not present)
+    await movie.save();
+    res.json({ success: true, trending: movie.trending });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error toggling trending status' });
+  }
+});
 // ...existing code...
 
 // --- Start Server ---
