@@ -1200,36 +1200,40 @@ app.put('/api/admin/movies/:id/trending', async (req, res) => {
   }
 });
 // ...existing code...
-
+const trendingMovies = await Movie.find({ trending: true }, {
+  title: 1,
+  director: 1,
+  actor: 1,
+  actress: 1,
+  releaseDate: 1,
+  releaseYear: 1,
+  rating: 1,
+  duration: 1,
+  posterUrl: 1,
+  genres: 1,
+  description: 1,
+  active: 1,
+  createdAt: 1,
+  category: 1,
+  episodes: 1,
+  trendingSince: 1,
+  trendingCount: 1
+}).sort({ trendingSince: -1 });
 // --- Get Trending Movies ---
+// filepath: MovieReviewApp_Backend/server.js
+// Replace this:
+// const trendingMovies = await Movie.find({ trending: true }, { ...fields... }).sort({ trendingSince: -1 });
+
+// With this:
 app.get('/api/movies/trending', async (req, res) => {
   try {
-    // Only fetch movies where trending is true
-    const trendingMovies = await Movie.find({ trending: true }, {
-      title: 1,
-      director: 1,
-      actor: 1,
-      actress: 1,
-      releaseDate: 1,
-      releaseYear: 1,
-      rating: 1,
-      duration: 1,
-      posterUrl: 1,
-      genres: 1,
-      description: 1,
-      active: 1,
-      createdAt: 1,
-      category: 1,
-      episodes: 1,
-      trendingSince: 1,
-      trendingCount: 1
-    }).sort({ trendingSince: -1 });
+    const trendingMovies = await Movie.find({ trending: true }).sort({ trendingSince: -1 });
     res.json(trendingMovies);
   } catch (error) {
+    console.error('Trending movies error:', error);
     res.status(500).json({ success: false, message: 'Error fetching trending movies' });
   }
 });
-
 // --- Start Server ---
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
