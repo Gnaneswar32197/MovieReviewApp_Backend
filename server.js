@@ -1230,16 +1230,6 @@ app.get('/api/movies/trending', async (req, res) => {
   }
 });
 
-// server.js
-app.get('/api/movies/trending', async (req, res) => {
-  try {
-    const trendingMovies = await Movie.find({ trending: true });
-    res.json(trendingMovies);
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Error fetching trending movies' });
-  }
-});
-
 // --- Start Server ---
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
