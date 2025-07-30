@@ -664,6 +664,8 @@ const movieSchema = new mongoose.Schema({
   genres: [String],
   description: String,
   trending: { type: Boolean, default: false },
+  trendingCount: { type: Number, default: 0 }, // <-- add this
+  trendingSince: { type: Date },
   active: { type: Boolean, default: true },
   category: { type: String, enum: ['Hollywood', 'Bollywood', 'Tollywood', 'Kollywood', 'Anime', 'Webseries', 'Sandlewood'], required: true },
   episodes: { type: Number }, // Only for Anime/Webseries
@@ -1006,6 +1008,7 @@ app.put('/api/movies/:id/comments/:idx', async (req, res) => {
 app.post('/api/user/favorites', async (req, res) => {
   const { userId, movieId } = req.body;
   if (!userId || !movieId) return res.status(400).json({ success: false, message: 'Missing userId or movieId' });
+
   try {
     let userFav = await UserFavorites.findOne({ userId });
     if (!userFav) {
@@ -1013,9 +1016,9 @@ app.post('/api/user/favorites', async (req, res) => {
     } else {
       const idx = userFav.favorites.findIndex(id => id.toString() === movieId);
       if (idx === -1) {
-        userFav.favorites.push(movieId);
+        userFav.favorites.push(movieId); // Add to favorites
       } else {
-        userFav.favorites.splice(idx, 1);
+        userFav.favorites.splice(idx, 1); // Remove from favorites
       }
     }
     await userFav.save();
@@ -1028,7 +1031,7 @@ app.post('/api/user/favorites', async (req, res) => {
 
 app.get('/api/user/favorites', async (req, res) => {
   const userId = req.query.userId;
-  if (!userId) return res.json([]);
+  if (!userId) return res.json([]); // Always return array
   try {
     const userFav = await UserFavorites.findOne({ userId }).populate('favorites');
     res.json(Array.isArray(userFav?.favorites) ? userFav.favorites : []);
@@ -1040,6 +1043,7 @@ app.get('/api/user/favorites', async (req, res) => {
 app.post('/api/user/watchlist', async (req, res) => {
   const { userId, movieId } = req.body;
   if (!userId || !movieId) return res.status(400).json({ success: false, message: 'Missing userId or movieId' });
+
   try {
     let userFav = await UserFavorites.findOne({ userId });
     if (!userFav) {
@@ -1047,9 +1051,9 @@ app.post('/api/user/watchlist', async (req, res) => {
     } else {
       const idx = userFav.watchlist.findIndex(id => id.toString() === movieId);
       if (idx === -1) {
-        userFav.watchlist.push(movieId);
+        userFav.watchlist.push(movieId); // Add to watchlist
       } else {
-        userFav.watchlist.splice(idx, 1);
+        userFav.watchlist.splice(idx, 1); // Remove from watchlist
       }
     }
     await userFav.save();
@@ -1062,7 +1066,7 @@ app.post('/api/user/watchlist', async (req, res) => {
 
 app.get('/api/user/watchlist', async (req, res) => {
   const userId = req.query.userId;
-  if (!userId) return res.json([]);
+  if (!userId) return res.json([]); // Always return array
   try {
     const userFav = await UserFavorites.findOne({ userId }).populate('watchlist');
     res.json(Array.isArray(userFav?.watchlist) ? userFav.watchlist : []);
@@ -1181,14 +1185,50 @@ app.put('/api/admin/movies/:id/trending', async (req, res) => {
     if (!movie) {
       return res.status(404).json({ success: false, message: 'Movie not found' });
     }
-    movie.trending = !movie.trending; // Toggle trending (add this field if not present)
+    if (!movie.trending) {
+      movie.trending = true;
+      movie.trendingCount = (movie.trendingCount || 0) + 1;
+      movie.trendingSince = new Date();
+    } else {
+      movie.trending = false;
+      movie.trendingSince = null;
+    }
     await movie.save();
-    res.json({ success: true, trending: movie.trending });
+    res.json({ success: true, trending: movie.trending, trendingCount: movie.trendingCount, trendingSince: movie.trendingSince });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error toggling trending status' });
   }
 });
 // ...existing code...
+
+// --- Get Trending Movies ---
+app.get('/api/movies/trending', async (req, res) => {
+  try {
+    // Only fetch movies where trending is true
+    const trendingMovies = await Movie.find({ trending: true }, {
+      title: 1,
+      director: 1,
+      actor: 1,
+      actress: 1,
+      releaseDate: 1,
+      releaseYear: 1,
+      rating: 1,
+      duration: 1,
+      posterUrl: 1,
+      genres: 1,
+      description: 1,
+      active: 1,
+      createdAt: 1,
+      category: 1,
+      episodes: 1,
+      trendingSince: 1,
+      trendingCount: 1
+    }).sort({ trendingSince: -1 });
+    res.json(trendingMovies);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching trending movies' });
+  }
+});
 
 // --- Start Server ---
 app.listen(PORT, () => {
