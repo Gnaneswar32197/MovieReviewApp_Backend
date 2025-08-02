@@ -1201,6 +1201,17 @@ app.put('/api/admin/movies/:id/trending', async (req, res) => {
 });
 // ...existing code...
 
+app.get('/api/movies/trending', async (req, res) => {
+  try {
+    // Remove the projection to avoid errors if some fields are missing
+    const trendingMovies = await Movie.find({ trending: true }).sort({ trendingSince: -1 });
+    res.json(trendingMovies);
+  } catch (error) {
+    console.error('Trending movies error:', error); // This will log the real error in your server logs
+    res.status(500).json({ success: false, message: 'Error fetching trending movies' });
+  }
+});
+
 // --- Start Server ---
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
